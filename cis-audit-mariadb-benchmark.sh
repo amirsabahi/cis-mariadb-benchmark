@@ -10,8 +10,6 @@ write_to_file() {
     echo -e "$1" >> "$output_file"
 }
 
-#!/bin/bash
-
 function log_message() {
   message=$1
   type=${2:-normal}  # Default type is "normal"
@@ -52,9 +50,8 @@ fi
 
 # Audit MariaDB configuration
 log_message "==========================="
-log_message "MariaDB CIS Benchmark Audit (1.60)"
+log_message "MariaDB CIS Benchmark Audit (1.0.0)"
 log_message "===========================\n"
-
 
 read -p "Enter the path to the MariaDB configuration file (e.g., /etc/mysql/my.cnf): " config_file
 
