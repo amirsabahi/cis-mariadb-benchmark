@@ -815,7 +815,7 @@ else
   log_message "FAIL: 'allow-suspicious-udfs' is not set to 'OFF' in the MariaDB configuration." "error"
 fi
 
-echo   "4.4 Harden Usage for 'local_infile' on MariaDB Clients (Automated)"
+log_message "4.4 Harden Usage for 'local_infile' on MariaDB Clients (Automated)"
 # Check MariaDB client version
 client_version=$(mariadb --version | awk '{print $5}')
 required_version="10.2.0"
@@ -830,7 +830,7 @@ else
   log_message "FAIL: local_infile should be disabled or not in use." "error"
 fi
 
-log_message  "3.5 Ensure mariadb is Not Started With 'skip-grant-tables' (Automated)"
+log_message  "4.5 Ensure mariadb is Not Started With 'skip-grant-tables' (Automated)"
 
 skip_grant_tables=$(grep -E -i "skip[_-]grant[_-]tables" "$config_file" | grep -v "#" | awk -F "=" '{print $2}' | tr '[:upper:]' '[:lower:]')
 
