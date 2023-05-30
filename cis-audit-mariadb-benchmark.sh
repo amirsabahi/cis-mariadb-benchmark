@@ -239,9 +239,9 @@ log_message "Escaped audits 2.1.1, 2.1.2, 2.1.3, 2.1.4, 2.1.5, 2.1.6, 2.1.7, 2.2
 
 log_message "Do you have a solid backup plan? This script do not check all the 2.1 Backup and Disaster Recovery. Use following link to learn more: https://mariadb.com/kb/en/using-encryption-and-compression-tools-with-mariabackup/" "info"
 
-log_message  "2.1.5 Point-in-Time Recovery (Automated))"
+log_message  "2.1.5 Point-in-Time Recovery (Automated)"
 # Check if binlogs are enabled
-binlog_status=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -e "SHOW VARIABLES LIKE 'log_bin';" | awk 'NR>1 {print $2}')
+binlog_status=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE 'log_bin';" | awk 'NR>1 {print $2}')
 
 if [ "$binlog_status" = "ON" ]; then
   log_message "PASS: Binlogs are enabled." "success"
@@ -345,7 +345,7 @@ else
   log_message "No accounts found."
 fi
 
-log_message  "2.8 Ensure Socket Peer-Credential Authentication is Used Appropriately (Manual))"
+log_message  "2.8 Ensure Socket Peer-Credential Authentication is Used Appropriately (Manual)"
 
 # Check if unix_socket plugin is enabled
 plugin_status_query="SELECT PLUGIN_NAME, PLUGIN_STATUS FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME = 'unix_socket';"
@@ -393,7 +393,7 @@ else
   log_message "No results found."
 fi
 
-log_message  "2.10 Limit Accepted Transport Layer Security (TLS) Versions (Automated))"
+log_message  "2.10 Limit Accepted Transport Layer Security (TLS) Versions (Automated)"
 # Check TLS versions
 tls_versions_query="select @@tls_version;"
 
@@ -462,7 +462,7 @@ done
 unset IFS
 
 
-log_message  "3.1 Ensure 'datadir' Has Appropriate Permissions (Automated))"
+log_message  "3.1 Ensure 'datadir' Has Appropriate Permissions (Automated)"
 
 # Execute the SQL statement to determine the value of datadir
 datadir_query="SELECT VARIABLE_NAME, VARIABLE_VALUE FROM information_schema.global_variables WHERE VARIABLE_NAME LIKE 'DATADIR';"
@@ -636,7 +636,7 @@ else
   log_message "FAIL: Unable to determine 'relay_log_basename'." "error"
 fi
 
-log_message  "3.6 Ensure 'general_log_file' Has Appropriate Permissions (Automated))"
+log_message  "3.6 Ensure 'general_log_file' Has Appropriate Permissions (Automated)"
 
 # Execute the SQL statement to determine the values of general_log and general_log_file
 general_log_query="select @@general_log, @@general_log_file;"
