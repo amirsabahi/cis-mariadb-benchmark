@@ -433,24 +433,23 @@ log_message  "2.12 Require Client-Side Certificates (X.509) (Automated)"
 # Run the SQL statement to check SSL ciphers
 ssl_ciphers_query="SELECT VARIABLE_NAME, VARIABLE_VALUE FROM information_schema.global_variables WHERE VARIABLE_NAME = 'ssl_cipher';"
 
-ssl_ciphers_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$ssl_ciphers_query")
+ssl_ciphers_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$ssl_ciphers_query" | awk '{print $2}')
 
 # Write results to the file
 log_message "SSL Ciphers Audit:"
 
 if [ -n "$ssl_ciphers_result" ]]; then
-  log_message "$ssl_ciphers_result"
+  log_message "PASS: $ssl_ciphers_result" "success"
 else
-  log_message "No results found."
+  log_message "FAIL: No results found." "error"
 fi
 
 # Check if SSL ciphers are empty or contain unapproved ciphers
-approved_ciphers=("cipher1" "cipher2" "cipher3")  # Add your approved ciphers here
+approved_ciphers=("ECDHE","ECDSA", "AES128", "GCM", "SHA256")  # Add your approved ciphers here
 
 IFS=$''
 for cipher in $ssl_ciphers_result; do
   cipher_name=$(echo "$cipher" | awk '{print $2}')
-  
   if [ -z "$cipher_name" ]]; then
     log_message "FAIL: SSL ciphers are empty." "error"
   elif [ ! " ${approved_ciphers[@]} " =~ " $cipher_name " ]]; then
@@ -462,7 +461,6 @@ done
 
 # Reset IFS
 unset IFS
-
 
 log_message  "3.1 Ensure 'datadir' Has Appropriate Permissions (Automated)"
 
@@ -587,10 +585,10 @@ if [[ -n "$slow_query_log_result" ]]; then
       log_message "$slow_query_log_file_result"
       
       # Extract the slow_query_log_file value from the result
-      slow_query_log_file=$(echo "$slow_query_log_file_result" | awk 'NR>1 {print $2}')
+      slow_query_log_file=$(echo "$slow_query_log_file_result" | awk '{print $2}')
       
       # Execute the command to check slow_query_log_file permissions
-      permissions_check=$(ls -l "$slow_query_log_file" | grep '^-rw-------.*mysql.*mysql.*$')
+      permissions_check=$(ls -l "/var/log/mysql/$slow_query_log_file" | grep '^-rw-------.*mysql.*mysql.*$')
       
       if [[ -z "$permissions_check" ]]; then
         log_message "FAIL: Non-compliant 'slow_query_log_file' permissions found:" "error"
