@@ -397,7 +397,7 @@ log_message  "2.10 Limit Accepted Transport Layer Security (TLS) Versions (Autom
 # Check TLS versions
 tls_versions_query="select @@tls_version;"
 
-tls_versions_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$tls_versions_query" | awk 'NR>1')
+tls_versions_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$tls_versions_query")
 
 # Write results to the file
 log_message "If the list includes TLSv1 and/or TLSv1.1, this is a fail."
