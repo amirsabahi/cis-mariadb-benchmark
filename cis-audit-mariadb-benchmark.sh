@@ -14,11 +14,11 @@ write_to_file() {
 
 function log_message() {
   message=$1
-  type=${2:-normal}  # Default type is "normal"
+  type=${2:-message}  # Default type is "message"
   log_file="log.txt"
 
   # Define color codes
-  normal_color="\033[0m"
+  message_color="\033[0m"
   red_color="\033[0;31m"
   yellow_color="\033[0;33m"
   blue_color="\033[0;34m"
@@ -34,11 +34,11 @@ function log_message() {
  elif [[ "$type" == "success" ]]; then
     color=$green_color   
   else
-    color=$normal_color
+    color=$message_color
   fi
 
   # Echo message with color
-  echo -e "${color}${message}${normal_color}"
+  echo -e "${color}${message}${message_color}"
 
   # Write message to log file
   write_to_file "$(date +"%Y-%m-%d %H:%M:%S") - [$type] - $message"
@@ -353,7 +353,7 @@ plugin_status_query="SELECT PLUGIN_NAME, PLUGIN_STATUS FROM INFORMATION_SCHEMA.P
 plugin_status=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$plugin_status_query")
 
 # Write plugin status to the file
-log_message "If PLUGIN_STATUS is ACTIVE and the organization does not allow use of this feature, this is a fail." "error"
+log_message "If PLUGIN_STATUS is ACTIVE and the organization does not allow use of this feature, this is a fail." "info"
 log_message "Plugin Status:"
 
 if [ -n "$plugin_status" ]; then
@@ -368,7 +368,7 @@ user_unix_socket_query="SELECT CONCAT(user, '@', host, ' => ', JSON_DETAILED(pri
 user_unix_socket=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -B -N -e "$user_unix_socket_query")
 
 # Write users who can use unix_socket to the file
-log_message "If host is not the localhost or an unauthorized user is listed, this is a fail." "error"
+log_message "If host is not the localhost or an unauthorized user is listed, this is a fail." "info"
 log_message "Users with unix_socket privilege:"
 
 if [ -n "$user_unix_socket" ]; then
@@ -384,7 +384,7 @@ bind_address_query="SELECT VARIABLE_NAME, VARIABLE_VALUE FROM information_schema
 bind_address_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$bind_address_query")
 
 # Write results to the file
-log_message "Any empty VARIABLE_VALUE implies a fail." "error"
+log_message "Any empty VARIABLE_VALUE implies a fail." "info"
 log_message "Bind Address Audit:"
 
 if [ -n "$bind_address_result" ]; then
@@ -397,16 +397,18 @@ log_message  "2.10 Limit Accepted Transport Layer Security (TLS) Versions (Autom
 # Check TLS versions
 tls_versions_query="select @@tls_version;"
 
-tls_versions_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$tls_versions_query")
+tls_versions_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$tls_versions_query" | awk 'NR>1')
 
 # Write results to the file
-log_message "If the list includes TLSv1 and/or TLSv1.1, this is a fail." "error"
+log_message "If the list includes TLSv1 and/or TLSv1.1, this is a fail."
 log_message "TLS Version Audit:"
 
-if [ -n "$tls_versions_result" ]; then
-  log_message "$tls_versions_result"
+if [[ "$tls_versions_result" == *"TLSv1.0"* ]]; then
+  log_message "FAIL: TLSv1.0 is present" "error"
+elif [[ "$tls_versions_result" == *"TLSv1.1"* ]]; then
+  log_message "FAIL: TLSv1.1 is present" "error"
 else
-  log_message "No results found."
+  log_message "PASS: No TLSv1.0 or 1.1" "success"
 fi
 
 log_message  "2.11 Require Client-Side Certificates (X.509) (Automated)"
