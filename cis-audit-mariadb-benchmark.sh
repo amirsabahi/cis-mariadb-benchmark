@@ -10,6 +10,8 @@ write_to_file() {
     echo -e "$1" >> "$output_file"
 }
 
+#!/bin/bash
+
 function log_message() {
   message=$1
   type=${2:-normal}  # Default type is "normal"
@@ -50,8 +52,9 @@ fi
 
 # Audit MariaDB configuration
 log_message "==========================="
-log_message "MariaDB CIS Benchmark Audit (1.0.0)"
+log_message "MariaDB CIS Benchmark Audit (1.60)"
 log_message "===========================\n"
+
 
 read -p "Enter the path to the MariaDB configuration file (e.g., /etc/mysql/my.cnf): " config_file
 
@@ -238,7 +241,7 @@ log_message "Do you have a solid backup plan? This script do not check all the 2
 
 log_message  "2.1.5 Point-in-Time Recovery (Automated))"
 # Check if binlogs are enabled
-binlog_status=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -e "SHOW VARIABLES LIKE 'log_bin';" | awk '{print $2}')
+binlog_status=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -e "SHOW VARIABLES LIKE 'log_bin';" | awk 'NR>1 {print $2}')
 
 if [ "$binlog_status" = "ON" ]; then
   log_message "PASS: Binlogs are enabled." "success"
@@ -473,7 +476,7 @@ if [[ -n "$datadir_result" ]]; then
   log_message "$datadir_result"
   
   # Extract the datadir path from the result
-  datadir_path=$(echo "$datadir_result" | awk '{print $2}')
+  datadir_path=$(echo "$datadir_result" | awk 'NR>1 {print $2}')
   
   # Execute the command to check datadir permissions
   permissions_check=$(sudo ls -ld "$datadir_path" | grep "drwxr-x---.*mysql.*mysql")
@@ -502,7 +505,7 @@ if [[ -n "$log_bin_basename_result" ]]; then
   log_message "$log_bin_basename_result"
   
   # Extract the log_bin_basename value from the result
-  log_bin_basename=$(echo "$log_bin_basename_result" | awk '{print $2}')
+  log_bin_basename=$(echo "$log_bin_basename_result" | awk 'NR>1 {print $2}')
   
   # Execute the command to check log_bin_basename file permissions
   permissions_check=$(ls -l | egrep '^-(?![r|w]{2}-[r|w]{2}----.*mysql\s*mysql).*'"$log_bin_basename"'.*$')
@@ -532,7 +535,7 @@ if [[ -n "$log_error_result" ]]; then
   log_message "$log_error_result"
   
   # Extract the log_error value from the result
-  log_error=$(echo "$log_error_result" | awk '{print $2}')
+  log_error=$(echo "$log_error_result" | awk 'NR>1 {print $2}')
   
   # Execute the command to check log_error file permissions
   permissions_check=$(ls -l "$log_error" | grep '^-rw-------.*mysql.*mysql.*$')
@@ -562,7 +565,7 @@ if [[ -n "$slow_query_log_result" ]]; then
   log_message "$slow_query_log_result"
   
   # Extract the slow_query_log value from the result
-  slow_query_log=$(echo "$slow_query_log_result" | awk '{print $2}')
+  slow_query_log=$(echo "$slow_query_log_result" | awk 'NR>1 {print $2}')
   
   # Check if slow_query_log is enabled or disabled
   if [[ "$slow_query_log" == "OFF" ]]; then
@@ -582,7 +585,7 @@ if [[ -n "$slow_query_log_result" ]]; then
       log_message "$slow_query_log_file_result"
       
       # Extract the slow_query_log_file value from the result
-      slow_query_log_file=$(echo "$slow_query_log_file_result" | awk '{print $2}')
+      slow_query_log_file=$(echo "$slow_query_log_file_result" | awk 'NR>1 {print $2}')
       
       # Execute the command to check slow_query_log_file permissions
       permissions_check=$(ls -l "$slow_query_log_file" | grep '^-rw-------.*mysql.*mysql.*$')
@@ -617,7 +620,7 @@ if [[ -n "$relay_log_basename_result" ]]; then
   log_message "$relay_log_basename_result"
   
   # Extract the relay_log_basename value from the result
-  relay_log_basename=$(echo "$relay_log_basename_result" | awk '{print $2}')
+  relay_log_basename=$(echo "$relay_log_basename_result" | awk 'NR>1 {print $2}')
   
   # Execute the command to check relay_log_basename file permissions
   permissions_check=$(ls -l | egrep "^-(?![r|w]{2}-[r|w]{2}----.*mysql\s*mysql).*${relay_log_basename}.*$")
@@ -772,7 +775,7 @@ fi
 log_message  "4.1 Ensure the Latest Security Patches are Applied (Manual)"
 
 # Execute SQL statement to identify MariaDB server version
-mariadb_version=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -N -B -e "SHOW VARIABLES WHERE Variable_name LIKE 'version';" | awk '{print $2}')
+mariadb_version=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -N -B -e "SHOW VARIABLES WHERE Variable_name LIKE 'version';" | awk 'NR>1 {print $2}')
 
 # Compare the version with security announcements
 latest_version="11.2"  # Update this with the latest version announced
@@ -819,7 +822,7 @@ required_version="10.2.0"
 log_message "NOTICE: MariaDB client version should be $required_version or higher. Current version is: $client_version" "info"
 
 # Check local_infile variable
-local_infile_value=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -e "SHOW VARIABLES WHERE Variable_name = 'local_infile'" | grep local_infile | awk '{print $2}')
+local_infile_value=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -e "SHOW VARIABLES WHERE Variable_name = 'local_infile'" | grep local_infile | awk 'NR>1 {print $2}')
 
 if [[ $local_infile_value == "OFF" || $local_infile_value == "0" ]]; then
   log_message "PASS: local_infile is disabled or not in use." "success"
@@ -839,7 +842,7 @@ fi
 
 log_message  "4.6 Ensure Symbolic Links are Disabled (Automated)"
 # Execute the SQL statement to check the value of 'have_symlink'
-have_symlink=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE 'have_symlink';" | awk '{print $2}')
+have_symlink=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE 'have_symlink';" | awk 'NR>1 {print $2}')
 
 if [[ $have_symlink == "DISABLED" ]]; then
   log_message "PASS: Symbolic links are disabled." "success"
