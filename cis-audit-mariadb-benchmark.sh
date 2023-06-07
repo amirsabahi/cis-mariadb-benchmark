@@ -474,7 +474,7 @@ if [[ -n "$datadir_result" ]]; then
   log_message "$datadir_result"
   
   # Extract the datadir path from the result
-  datadir_path=$(echo "$datadir_result" | awk 'NR>1 {print $2}')
+  datadir_path=$(echo "$datadir_result" | awk '{print $2}')
   
   # Execute the command to check datadir permissions
   permissions_check=$(ls -ld "$datadir_path" | grep "drwxr-x---.*mysql.*mysql")
