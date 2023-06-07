@@ -908,7 +908,7 @@ log_message  "5.2 Ensure 'FILE' is Not Granted to Non-Administrative Users (Manu
 query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'FILE';")
 
 # Check if any non-administrative users are returned
-if [[ -z "$query_result" ]]  || [[ "$query_result" =~ root ]]; then
+if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
   log_message "PASS: 'FILE' privilege is not granted to non-administrative users." "success"
 else
   log_message "FAIL: 'FILE' privilege is granted to non-administrative users." "error"
@@ -921,7 +921,7 @@ log_message  "5.3 Ensure 'PROCESS' is Not Granted to Non-Administrative Users (M
 query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'PROCESS';")
 
 # Check if any non-administrative users are returned
-if [[ -z "$query_result" ]]; then
+if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
   log_message "PASS: 'PROCESS' privilege is not granted to non-administrative users." "success"
 else
   log_message "FAIL: 'PROCESS' privilege is granted to non-administrative users." "error"
@@ -934,7 +934,7 @@ log_message  "5.4 Ensure 'SUPER' is Not Granted to Non-Administrative Users (Man
 query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'SUPER';")
 
 # Check if any non-administrative users are returned
-if [[ -z "$query_result" ]]; then
+if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
   log_message "PASS: 'SUPER' privilege is not granted to non-administrative users." "success"
 else
   echlog_messageo "FAIL: 'SUPER' privilege is granted to non-administrative users." "error"
@@ -947,7 +947,7 @@ log_message  "5.5 Ensure 'SHUTDOWN' is Not Granted to Non-Administrative Users (
 query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'SHUTDOWN';")
 
 # Check if any non-administrative users are returned
-if [[ -z "$query_result" ]]; then
+if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
   log_message "PASS: 'SHUTDOWN' privilege is not granted to non-administrative users." "success"
 else
   log_message "FAIL: 'SHUTDOWN' privilege is granted to non-administrative users." "error"
@@ -960,7 +960,7 @@ log_message  "5.6 Ensure 'CREATE USER' is Not Granted to Non-Administrative User
 query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'CREATE USER';")
 
 # Check if any non-administrative users are returned
-if [[ -z "$query_result" ]]; then
+if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
   log_message "PASS: 'CREATE USER' privilege is not granted to non-administrative users." "success"
 else
   log_message "FAIL: 'CREATE USER' privilege is granted to non-administrative users." "error"
@@ -973,7 +973,7 @@ log_message  "5.7 Ensure 'GRANT OPTION' is Not Granted to Non-Administrative Use
 query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT DISTINCT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE IS_GRANTABLE = 'YES';")
 
 # Check if any non-administrative users are returned
-if [[ -z "$query_result" ]]; then
+if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
   log_message "PASS: 'GRANT OPTION' is not granted to non-administrative users." "success"
 else
   log_message "FAIL: 'GRANT OPTION' is granted to non-administrative users." "error"
@@ -986,7 +986,7 @@ log_message  "5.8 Ensure 'REPLICATION SLAVE' is Not Granted to Non-Administrativ
 query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'REPLICATION SLAVE';")
 
 # Check if any non-administrative users are returned
-if [[ -z "$query_result" ]]; then
+if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
   log_message "PASS: 'REPLICATION SLAVE' privilege is not granted to non-administrative users." "success"
 else
   log_message "FAIL: 'REPLICATION SLAVE' privilege is granted to non-administrative users." "error"
@@ -999,7 +999,7 @@ log_message  "5.9 Ensure DML/DDL Grants are Limited to Specific Databases and Us
 query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT User, Host, Db FROM mysql.db WHERE Select_priv='Y' OR Insert_priv='Y' OR Update_priv='Y' OR Delete_priv='Y' OR Create_priv='Y' OR Drop_priv='Y' OR Alter_priv='Y';")
 
 # Check if any users have unrestricted DML/DDL privileges
-if [[ -z "$query_result" ]]; then
+if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
   log_message "PASS: DML/DDL grants are limited to specific databases and users." "success"
 else
   log_message "FAIL: DML/DDL grants are not limited to specific databases and users." "error"
