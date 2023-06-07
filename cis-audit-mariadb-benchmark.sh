@@ -1143,7 +1143,7 @@ else
 fi
 
 # Check if simple_password_check and cracklib_password_check plugins are active
-plugin_status=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" --defaults-extra-file="$config_file" -e "SHOW PLUGINS;")
+plugin_status=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW PLUGINS;")
 
 if [[ $plugin_status == *"simple_password_check"*"ACTIVE"* ]] && [[ $plugin_status == *"cracklib_password_check"*"ACTIVE"* ]]; then
   log_message "PASS: Password complexity plugins (simple_password_check and cracklib_password_check) are active." "success"
@@ -1152,7 +1152,7 @@ else
 fi
 
 # Check password policy settings
-password_settings=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" --defaults-extra-file="$config_file" -e "SHOW VARIABLES LIKE '%pass%';")
+password_settings=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE '%pass%';")
 
 minimal_length=$(echo "$password_settings" | awk '/simple_password_check_minimal_length/ {print $2}')
 strict_validation=$(echo "$password_settings" | awk '/strict_password_validation/ {print $2}')
