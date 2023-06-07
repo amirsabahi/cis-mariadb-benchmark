@@ -215,7 +215,7 @@ if echo "$docker_version" | grep -q "Docker version"; then
   log_message "PASS: Docker is installed." "success"
 
   # Check MariaDB image in Docker
-  mariadb_image=$(sudo docker images -q mariadb:latest)
+  mariadb_image=$(docker images -q mariadb:latest)
 
   if [ -z "$mariadb_image" ]; then
     log_message "FAIL: MariaDB image is not found in Docker." "error"
@@ -223,7 +223,7 @@ if echo "$docker_version" | grep -q "Docker version"; then
     log_message "PASS: MariaDB image exists in Docker." "success"
 
     # Check MariaDB container in Docker
-    mariadb_container=$(sudo docker ps -q -f ancestor=mariadb:latest)
+    mariadb_container=$(docker ps -q -f ancestor=mariadb:latest)
 
     if [ -z "$mariadb_container" ]; then
       log_message "FAIL: MariaDB container is not running in Docker." "error"
@@ -479,7 +479,7 @@ if [[ -n "$datadir_result" ]]; then
   datadir_path=$(echo "$datadir_result" | awk 'NR>1 {print $2}')
   
   # Execute the command to check datadir permissions
-  permissions_check=$(sudo ls -ld "$datadir_path" | grep "drwxr-x---.*mysql.*mysql")
+  permissions_check=$(ls -ld "$datadir_path" | grep "drwxr-x---.*mysql.*mysql")
   
   if [[ -z "$permissions_check" ]]; then
     log_message "FAIL: 'datadir' does not have appropriate permissions." "error"
