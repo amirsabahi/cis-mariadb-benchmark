@@ -10,8 +10,6 @@ write_to_file() {
     echo -e "$1" >> "$output_file"
 }
 
-#!/bin/bash
-
 function log_message() {
   message=$1
   type=${2:-message}  # Default type is "message"
@@ -910,7 +908,7 @@ log_message  "5.2 Ensure 'FILE' is Not Granted to Non-Administrative Users (Manu
 query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'FILE';")
 
 # Check if any non-administrative users are returned
-if [[ -z "$query_result" ]]  || [[ "$query_result" =~ root@ ]]; then
+if [[ -z "$query_result" ]]  || [[ "$query_result" =~ root ]]; then
   log_message "PASS: 'FILE' privilege is not granted to non-administrative users." "success"
 else
   log_message "FAIL: 'FILE' privilege is granted to non-administrative users." "error"
