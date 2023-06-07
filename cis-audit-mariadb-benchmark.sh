@@ -1154,16 +1154,35 @@ fi
 # Check password policy settings
 password_settings=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE '%pass%';")
 
-minimal_length=$(echo "$password_settings" | awk '/simple_password_check_minimal_length/ {print $2}')
-strict_validation=$(echo "$password_settings" | awk '/strict_password_validation/ {print $2}')
-cracklib_dictionary=$(echo "$password_settings" | awk '/cracklib_password_check_dictionary/ {print $2}')
-
-if [[ $minimal_length -ge 14 ]] && [[ $strict_validation == "ON" ]] && [[ $cracklib_dictionary != "" ]]; then
-  log_message "PASS: Password policy settings are in place." "success"
+# Check if simple_password_check_minimal_length is greater than or equal to 14
+if [[ $password_settings == *"simple_password_check_minimal_length "* ]]; then
+  minimal_length=$(grep -oP "(?<=simple_password_check_minimal_length )\d+" <<< "$password_settings")
+  if [[ $minimal_length -ge 14 ]]; then
+    log_message "PASS: simple_password_check_minimal_length is greater than or equal to 14." "success"
+  else
+    log_message "FAIL: simple_password_check_minimal_length is less than 14." "error"
+  fi
 else
-  log_message "FAIL: Password policy settings are not configured correctly." "error"
-  log_message "Password policy settings:"
-  log_message "$password_settings"
+  log_message "FAIL: simple_password_check_minimal_length is not defined." "error"
+fi
+
+# Check if strict_password_validation is ON
+if [[ $password_settings == *"strict_password_validation ON"* ]]; then
+  log_message "PASS: strict_password_validation is ON." "success"
+else
+  log_message "FAIL: strict_password_validation is not ON." "error"
+fi
+
+# Check if cracklib_password_check_dictionary is not empty
+if [[ $password_settings == *"cracklib_password_check_dictionary "* ]]; then
+  dictionary=$(grep -oP "(?<=cracklib_password_check_dictionary )\S+" <<< "$password_settings")
+  if [[ -n $dictionary ]]; then
+    log_message "PASS: cracklib_password_check_dictionary is not empty." "success"
+  else
+    log_message "FAIL: cracklib_password_check_dictionary is empty." "error"
+  fi
+else
+  log_message "FAIL: cracklib_password_check_dictionary is not defined." "error"
 fi
 
 log_message  "7.5 Ensure No Users Have Wildcard Hostnames (Automated)"
