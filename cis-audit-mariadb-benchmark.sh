@@ -438,7 +438,7 @@ ssl_ciphers_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N
 # Write results to the file
 log_message "SSL Ciphers Audit:"
 
-if [ -n "$ssl_ciphers_result" ]]; then
+if [ -n "$ssl_ciphers_result" ]; then
   log_message "PASS: $ssl_ciphers_result" "success"
 else
   log_message "FAIL: No results found." "error"
@@ -598,7 +598,7 @@ if [[ -n "$slow_query_log_result" ]]; then
       fi
     else
       log_message "No 'slow_query_log_file' value found."
-      log_message "FAIL: Unable to determine 'slow_query_log_file'." "error"
+      log_message "NOTICE: Unable to determine 'slow_query_log_file'." "notice"
     fi
   fi
 else
@@ -855,7 +855,7 @@ log_message  "4.7 Ensure the 'secure_file_priv' is Configured Correctly (Automat
 secure_file_priv=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW GLOBAL VARIABLES WHERE Variable_name = 'secure_file_priv';" | awk 'NR>1 {print $2}')
 
 if [[ -z "$secure_file_priv" ]]; then
-  log_message "FAIL: 'secure_file_priv' is set to an empty string." "error"
+  log_message "FAIL: 'secure_file_priv' is set to an empty string. If you are not going to use this feature, remove secure_file_priv from the [mariadbd]" "error"
 elif [[ "$secure_file_priv" == "NULL" ]]; then
   log_message "PASS: 'secure_file_priv' is disabled." "success"
 else
