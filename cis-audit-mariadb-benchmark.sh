@@ -579,7 +579,7 @@ if [[ -n "$slow_query_log_result" ]]; then
 
     slow_query_log_file_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -B -N -e "$slow_query_log_file_query")
 
-    if [[ -n "$slow_query_log_file_result" ]]; then
+    if [[ -n "$slow_query_log_file_result" ]] && [[ -f "/var/log/mysql/$slow_query_log_file" ]] ; then
       log_message "$slow_query_log_file_result"
       
       # Extract the slow_query_log_file value from the result
