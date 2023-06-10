@@ -92,7 +92,7 @@ echo "$CONFIG_ENTRIES" | tee -a /etc/mysql/mariadb.cnf > /dev/null
 
 # Restart MariaDB service to apply the changes
 echo "Restarting MariaDB service..."
-service mariadb restart
+service mariadb reload
 
 usermod -s /bin/false mysql
 
