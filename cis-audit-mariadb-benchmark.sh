@@ -54,12 +54,15 @@ log_message "MariaDB CIS Benchmark Audit (1.60)"
 log_message "===========================\n"
 
 
-read -p "Enter the path to the MariaDB configuration file (e.g., /etc/mysql/my.cnf): " config_file
+read -p "Enter the path to the MariaDB configuration file (Default is /etc/mysql/my.cnf): " config_file
+config_file=${config_file:-/etc/mysql/my.cnf}
 
 # Prompt for mariadbd startup command path
-read -p "Enter the path to the mariadbd startup command: ( /usr/bin/mysql or /etc/bin/mysql): " mariadb_startup_command
+read -p "Enter the path to the mariadbd startup command: ( /usr/bin/mysql or press enter for default:/etc/bin/mysql): " mariadb_startup_command
 
+mariadb_startup_command=${mariadb_startup_command:-/etc/bin/mysql}
 # Prompt the user for MariaDB credentials
+
 read -p "Enter MariaDB Username: " username
 read -s -p "Enter MariaDB Password: " password
 echo
