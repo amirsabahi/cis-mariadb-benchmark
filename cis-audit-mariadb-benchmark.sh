@@ -340,7 +340,7 @@ log_message "Account Lock Status:"
 if [ -n "$account_lock_status" ]; then
   log_message "$account_lock_status"
 else
-  log_message "No accounts found."
+  log_message "PASS: No accounts found." "success"
 fi
 
 log_message  "2.8 Ensure Socket Peer-Credential Authentication is Used Appropriately (Manual)"
@@ -357,7 +357,7 @@ log_message "Plugin Status:"
 if [ -n "$plugin_status" ]; then
   log_message "$plugin_status"
 else
-  log_message "Plugin not found."
+  log_message "PASS: Plugin not found." "success"
 fi
 
 # Check users who can use unix_socket
@@ -426,7 +426,7 @@ else
   log_message "No results found."
 fi
 
-log_message  "2.12 Require Client-Side Certificates (X.509) (Automated)"
+log_message  "2.12 Ensure Only Approved Ciphers are Used (Automated)"
 
 # Run the SQL statement to check SSL ciphers
 ssl_ciphers_query="SELECT VARIABLE_NAME, VARIABLE_VALUE FROM information_schema.global_variables WHERE VARIABLE_NAME = 'ssl_cipher';"
