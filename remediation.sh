@@ -49,10 +49,7 @@ echo -e "\033[0;33m Set ssl_cert ssl_key and ssl_ca for client and server. \033[
 apt update
 apt-get --assume-yes install mariadb-plugin-cracklib-password-check
 
-# Run MariaDB Commands
-DB_USER=username
-DB_PASSWORD=password
-
+# MariaDB Commands
 # Run the SQL commands
 mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SET GLOBAL slow_query_log = 'OFF';"
 mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SET GLOBAL general_log = 'OFF';"
