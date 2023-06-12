@@ -57,44 +57,19 @@ mysql -u $DB_USER -p$DB_PASSWORD -e "SET GLOBAL general_log = 'OFF';"
 mysql -u $DB_USER -p$DB_PASSWORD -e "SET GLOBAL sql_mode = 'STRICT_ALL_TABLES,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';"
 mysql -u $DB_USER -p$DB_PASSWORD -e "INSTALL SONAME 'simple_password_check';"
 mysql -u $DB_USER -p$DB_PASSWORD -e "INSTALL SONAME 'cracklib_password_check';"
+mysql -u $DB_USER -p$DB_PASSWORD -e "INSTALL SONAME 'server_audit';"
+mysql -u $DB_USER -p$DB_PASSWORD -e "SET GLOBAL sql_mode ='STRICT_ALL_TABLES,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';"
+mysql -u $DB_USER -p$DB_PASSWORD -e "alter user 'root'@'localhost' identified via 'unix_socket'; set password for 'mysql'@'localhost' = 'invalid'; set password for 'mariadb.sys'@'localhost' = 'invalid';"
+echo -e "\033[0;33m Run the following for each user manually: alter user 'laravel'@'localhost' identified via 'unix_socket'; \033[0m"
+echo -e "\033[0;33m Run the following for each user manually: ALTER USER 'user_name'@'localhost' REQUIRE SSL; \033[0m"
 
 
+chmod 660 /root/server_audit.log
+chown mysql:mysql /root/server_audit.log
 
-# Define the configuration entries
-CONFIG_ENTRIES="
-plugin_load_add = simple_password_check
-simple_password_check = FORCE_PLUS_PERMANENT
-simple_password_check_minimal_length = 14
-plugin_load_add = cracklib_password_check
-cracklib_password_check = FORCE_PLUS_PERMANENT
-skip-symbolic-links = 1
-skip-grant-tables = FALSE
-
-plugin_load_add = file_key_management
-file_key_management_filename = /etc/mysql/encryption/keyfile.enc
-file_key_management_filekey = FILE:/etc/mysql/encryption/keyfile.key
-# Binary Log Encryption
-encrypt_binlog = ON
-# Redo Log Encryption
-innodb_encrypt_log = ON
-# Encrypting Temporary Files
-encrypt_tmp_files = ON
-# You can configure InnoDB encryption to automatically have all new InnoDB
-tables automatically encrypted, or specify encrypt per table.
-innodb_encrypt_tables = ON
-# Uncomment the line below if utilizing MariaDB built with OpenSSL
-# file_key_management_encryption_algorithm = AES_CTR
-"
-
-# Add the entries to /etc/mysql/mariadb.cnf
-echo "Adding entries to /etc/mysql/mariadb.cnf..."
-echo "$CONFIG_ENTRIES" | tee -a /etc/mysql/mariadb.cnf > /dev/null
-
-# Restart MariaDB service to apply the changes
-echo "Restarting MariaDB service..."
-service mariadb reload
 
 usermod -s /bin/false mysql
 
+echo -e "\033[0;33m Ensure No Users Have Wildcard Hostnames. Use ALTER USER \033[0m"
 echo -e "\033[0;33m Now you can enable encyption for any table in the desired database. (ALTER TABLE table_name ENCRYPTED=YES ENCRYPTION_KEY_ID=1;) \033[0m"
 echo "Done!"
