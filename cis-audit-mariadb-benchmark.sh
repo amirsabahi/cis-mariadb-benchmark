@@ -80,7 +80,7 @@ WHERE (VARIABLE_NAME LIKE '%dir' OR VARIABLE_NAME LIKE '%file') AND
 (VARIABLE_NAME NOT LIKE '%core%' AND VARIABLE_NAME <> 'local_infile' AND VARIABLE_NAME <> 'relay_log_info_file')
 ORDER BY VARIABLE_NAME;"
 
-datadir_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "$sql_query" | grep 'DATADIR' | awk '{print $2}')
+datadir_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "$sql_query" | grep 'DATADIR' | awk '{print $2}')
 
 # Check if datadir result is empty
 if [ -z "$datadir_result" ]; then
@@ -242,7 +242,7 @@ log_message "Do you have a solid backup plan? This script do not check all the 2
 
 log_message  "2.1.5 Point-in-Time Recovery (Automated)"
 # Check if binlogs are enabled
-binlog_status=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE 'log_bin';" | awk 'NR>1 {print $2}')
+binlog_status=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE 'log_bin';" | awk 'NR>1 {print $2}')
 
 if [ "$binlog_status" = "ON" ]; then
   log_message "PASS: Binlogs are enabled." "success"
@@ -251,7 +251,7 @@ else
 fi
 
 # Check if there is a restore procedure
-restore_procedure=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW PROCEDURE STATUS WHERE Name = 'restore_backup';" | awk 'NR>1')
+restore_procedure=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW PROCEDURE STATUS WHERE Name = 'restore_backup';" | awk 'NR>1')
 
 if [ -n "$restore_procedure" ]; then
   log_message "PASS: Restore procedure 'restore_backup' exists." "success"
@@ -260,7 +260,7 @@ else
 fi
 
 # Check if binlog_expire_logs_seconds is set
-expire_logs_seconds=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT VARIABLE_VALUE FROM information_schema.global_variables WHERE VARIABLE_NAME = 'binlog_expire_logs_seconds';" | awk 'NR>1')
+expire_logs_seconds=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT VARIABLE_VALUE FROM information_schema.global_variables WHERE VARIABLE_NAME = 'binlog_expire_logs_seconds';" | awk 'NR>1')
 
 if [ "$expire_logs_seconds" != "0" ]; then
   log_message "PASS: binlog_expire_logs_seconds is set to $expire_logs_seconds." "success"
@@ -283,12 +283,12 @@ log_message "Each user (excluding mysql reserved users) should be linked to one 
 • system accounts
 • a person
 • an application"
-datadir_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "$sql_query")
+datadir_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "$sql_query")
 log_message $datadir_result
 
 log_message  "2.6 Ensure 'password_lifetime' is Less Than or Equal to '365'(Automated)"
 # Check global password lifetime
-global_lifetime=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "SELECT VARIABLE_VALUE FROM information_schema.global_variables WHERE VARIABLE_NAME = 'default_password_lifetime';")
+global_lifetime=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "SELECT VARIABLE_VALUE FROM information_schema.global_variables WHERE VARIABLE_NAME = 'default_password_lifetime';")
 
 if [ $global_lifetime -gt 365 ]; then
   log_message "FAIL: Global password lifetime is greater than 365." "error"
@@ -319,7 +319,7 @@ FROM_UNIXTIME(pei.password_last_changed) AS password_last_changed_datetime,
 FROM password_expiration_info pei
 WHERE pei.password_lifetime = 0 OR pei.password_last_changed IS NULL;"
 
-user_password_expiration=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$password_expiration_query")
+user_password_expiration=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$password_expiration_query")
 
 # Write user password expiration information to the file
 log_message "User Password Expiration:"
@@ -334,7 +334,7 @@ log_message  "2.7 Lock Out Accounts if Not Currently in Use (Manual)"
 # Check account lock status
 lock_status_query="SELECT CONCAT(user, '@', host, ' => ', JSON_DETAILED(priv)) FROM mysql.global_priv;"
 
-account_lock_status=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$lock_status_query")
+account_lock_status=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$lock_status_query")
 
 # Write account lock status to the file
 log_message "Accounts not in use and MariaDB Reserved accounts should show as account_locked:true "
@@ -351,7 +351,7 @@ log_message  "2.8 Ensure Socket Peer-Credential Authentication is Used Appropria
 # Check if unix_socket plugin is enabled
 plugin_status_query="SELECT PLUGIN_NAME, PLUGIN_STATUS FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME = 'unix_socket';"
 
-plugin_status=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$plugin_status_query")
+plugin_status=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$plugin_status_query")
 
 # Write plugin status to the file
 log_message "If PLUGIN_STATUS is ACTIVE and the organization does not allow use of this feature, this is a fail." "info"
@@ -366,7 +366,7 @@ fi
 # Check users who can use unix_socket
 user_unix_socket_query="SELECT CONCAT(user, '@', host, ' => ', JSON_DETAILED(priv)) FROM mysql.global_priv WHERE JSON_CONTAINS(priv, '{"plugin":"unix_socket"}', '$.auth_or');"
 
-user_unix_socket=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -B -N -e "$user_unix_socket_query")
+user_unix_socket=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port"  -B -N -e "$user_unix_socket_query")
 
 # Write users who can use unix_socket to the file
 log_message "If host is not the localhost or an unauthorized user is listed, this is a fail." "info"
@@ -382,7 +382,7 @@ log_message  "2.9 Ensure MariaDB is Bound to an IP Address (Automated)"
 # Run SQL statement to check bind_address variable
 bind_address_query="SELECT VARIABLE_NAME, VARIABLE_VALUE FROM information_schema.global_variables WHERE VARIABLE_NAME = 'bind_address';"
 
-bind_address_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$bind_address_query")
+bind_address_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$bind_address_query")
 
 # Write results to the file
 log_message "Any empty VARIABLE_VALUE implies a fail." "info"
@@ -398,7 +398,7 @@ log_message  "2.10 Limit Accepted Transport Layer Security (TLS) Versions (Autom
 # Check TLS versions
 tls_versions_query="select @@tls_version;"
 
-tls_versions_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$tls_versions_query")
+tls_versions_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$tls_versions_query")
 
 # Write results to the file
 log_message "If the list includes TLSv1 and/or TLSv1.1, this is a fail."
@@ -417,7 +417,7 @@ log_message  "2.11 Require Client-Side Certificates (X.509) (Automated)"
 # Check SSL type for users
 ssl_type_query="SELECT user, host, ssl_type FROM mysql.user WHERE user NOT IN ('mysql', 'root', 'mariadb.sys');"
 
-ssl_type_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$ssl_type_query")
+ssl_type_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$ssl_type_query")
 
 # Write results to the file
 "If ssl_type returns X509, client-side certificate details must be provided to connect."
@@ -434,7 +434,7 @@ log_message  "2.12 Ensure Only Approved Ciphers are Used (Automated)"
 # Run the SQL statement to check SSL ciphers
 ssl_ciphers_query="SELECT VARIABLE_NAME, VARIABLE_VALUE FROM information_schema.global_variables WHERE VARIABLE_NAME = 'ssl_cipher';"
 
-ssl_ciphers_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$ssl_ciphers_query" | awk '{print $2}')
+ssl_ciphers_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$ssl_ciphers_query" | awk '{print $2}')
 
 # Write results to the file
 log_message "SSL Ciphers Audit:"
@@ -468,7 +468,7 @@ log_message  "3.1 Ensure 'datadir' Has Appropriate Permissions (Automated)"
 # Execute the SQL statement to determine the value of datadir
 datadir_query="SELECT VARIABLE_NAME, VARIABLE_VALUE FROM information_schema.global_variables WHERE VARIABLE_NAME LIKE 'DATADIR';"
 
-datadir_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -B -N -e "$datadir_query")
+datadir_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port"  -B -N -e "$datadir_query")
 
 # Write results to the file
 log_message "datadir Permissions Audit:"
@@ -497,7 +497,7 @@ log_message  "3.2 Ensure 'log_bin_basename' Files Have AppropriatePermissions (A
 # Execute the SQL statement to determine the value of log_bin_basename
 log_bin_basename_query="show variables like 'log_bin_basename';"
 
-log_bin_basename_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$log_bin_basename_query")
+log_bin_basename_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$log_bin_basename_query")
 
 # Write results to the file
 log_message "log_bin_basename Permissions Audit:"
@@ -527,7 +527,7 @@ log_message  "3.3 Ensure 'log_error' Has Appropriate Permissions (Automated)"
 # Execute the SQL statement to determine the value of log_error
 log_error_query="show variables like 'log_error';"
 
-log_error_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$log_error_query")
+log_error_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$log_error_query")
 
 # Write results to the file
 log_message "log_error Permissions Audit:"
@@ -557,7 +557,7 @@ log_message  "3.4 Ensure 'slow_query_log' Has Appropriate Permissions (Automated
 # Execute the SQL statement to determine the value of slow_query_log
 slow_query_log_query="show variables like 'slow_query_log';"
 
-slow_query_log_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$slow_query_log_query")
+slow_query_log_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$slow_query_log_query")
 
 # Write results to the file
 log_message "slow_query_log Permissions Audit:"
@@ -580,7 +580,7 @@ if [[ -n "$slow_query_log_result" ]]; then
     # Execute the SQL statement to determine the location of slow_query_log_file
     slow_query_log_file_query="show variables like 'slow_query_log_file';"
 
-    slow_query_log_file_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -B -N -e "$slow_query_log_file_query")
+    slow_query_log_file_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port"  -B -N -e "$slow_query_log_file_query")
 
     if [[ -n "$slow_query_log_file_result" ]] && [[ -f "/var/log/mysql/$slow_query_log_file" ]] ; then
       log_message "$slow_query_log_file_result"
@@ -612,7 +612,7 @@ log_message  "3.5 Ensure 'relay_log_basename' Files Have Appropriate Permissions
 # Execute the SQL statement to determine the value of relay_log_basename
 relay_log_basename_query="show variables like 'relay_log_basename';"
 
-relay_log_basename_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$relay_log_basename_query")
+relay_log_basename_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$relay_log_basename_query")
 
 # Write results to the file
 log_message "relay_log_basename Permissions Audit:"
@@ -642,7 +642,7 @@ log_message  "3.6 Ensure 'general_log_file' Has Appropriate Permissions (Automat
 # Execute the SQL statement to determine the values of general_log and general_log_file
 general_log_query="select @@general_log, @@general_log_file;"
 
-general_log_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -B -N -e "$general_log_query")
+general_log_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port"  -B -N -e "$general_log_query")
 
 # Write results to the file
 log_message "general_log_file Permissions Audit:"
@@ -685,7 +685,7 @@ fi
 log_message  "3.7 Ensure SSL Key Files Have Appropriate Permissions (Automated)"
 
 # Execute the SQL statement to retrieve SSL key files
-ssl_key_files=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT VARIABLE_VALUE FROM information_schema.global_variables WHERE REGEXP_INSTR(VARIABLE_NAME, '^.*ssl_(ca|capath|cert|crl|crlpath|key)$') AND VARIABLE_VALUE <> '';" | tail -n +2)
+ssl_key_files=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT VARIABLE_VALUE FROM information_schema.global_variables WHERE REGEXP_INSTR(VARIABLE_NAME, '^.*ssl_(ca|capath|cert|crl|crlpath|key)$') AND VARIABLE_VALUE <> '';" | tail -n +2)
 
 # Perform the permissions audit for each SSL key file
 log_message "SSL Key Files Permissions Audit:"
@@ -709,7 +709,7 @@ done <<< "$ssl_key_files"
 log_message  "3.8 Ensure Plugin Directory Has Appropriate Permissions (Automated)"
 
 # Retrieve plugin directory value from MySQL
-plugin_dir=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "show variables where variable_name = 'plugin_dir'" | awk '/plugin_dir/ {print $2}')
+plugin_dir=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "show variables where variable_name = 'plugin_dir'" | awk '/plugin_dir/ {print $2}')
 
 # Check permissions and ownership of the plugin directory
 ls -ld "$plugin_dir" | grep -E "dr-xr-x---|dr-xr-xr--" | grep "plugin"
@@ -724,7 +724,7 @@ fi
 log_message  "3.9 Ensure 'server_audit_file_path' Has Appropriate Permissions (Automated)"
 
 # Retrieve 'server_audit_file_path' value from MySQL
-server_audit_file_path=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "show global variables where variable_name='server_audit_file_path'" | awk '/server_audit_file_path/ {print $2}')
+server_audit_file_path=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "show global variables where variable_name='server_audit_file_path'" | awk '/server_audit_file_path/ {print $2}')
 
 # Check if 'server_audit_file_path' value is empty
 if [[ -z "$server_audit_file_path" ]]; then
@@ -776,7 +776,7 @@ fi
 log_message  "4.1 Ensure the Latest Security Patches are Applied (Manual)"
 
 # Execute SQL statement to identify MariaDB server version
-mariadb_version=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -N -B -e "SHOW VARIABLES WHERE Variable_name LIKE 'version';" | awk 'NR>1 {print $2}')
+mariadb_version=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port"  -N -B -e "SHOW VARIABLES WHERE Variable_name LIKE 'version';" | awk 'NR>1 {print $2}')
 
 # Compare the version with security announcements
 latest_version="11.2"  # Update this with the latest version announced
@@ -790,7 +790,7 @@ fi
 log_message  "4.2 Ensure Example or Test Databases are Not Installed on Production Servers (Automated)"
 
 # Execute SQL statement to determine if test database is present
-result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -N -B -e "SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME NOT IN ('mysql', 'information_schema', 'sys', 'performance_schema');")
+result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -N -B -e "SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME NOT IN ('mysql', 'information_schema', 'sys', 'performance_schema');")
 
 if [[ $result -gt 0 ]]; then
   log_message "FAIL: Test or example databases are present on the server." "error"
@@ -823,7 +823,7 @@ required_version="10.2.0"
 log_message "NOTICE: MariaDB client version should be $required_version or higher. Current version is: $client_version" "info"
 
 # Check local_infile variable
-local_infile_value=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -e "SHOW VARIABLES WHERE Variable_name = 'local_infile'" | grep local_infile | awk 'NR>1 {print $2}')
+local_infile_value=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port"  -e "SHOW VARIABLES WHERE Variable_name = 'local_infile'" | grep local_infile | awk 'NR>1 {print $2}')
 
 if [[ $local_infile_value == "OFF" || $local_infile_value == "0" ]]; then
   log_message "PASS: local_infile is disabled or not in use." "success"
@@ -843,7 +843,7 @@ fi
 
 log_message  "4.6 Ensure Symbolic Links are Disabled (Automated)"
 # Execute the SQL statement to check the value of 'have_symlink'
-have_symlink=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE 'have_symlink';" | awk 'NR>1 {print $2}')
+have_symlink=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE 'have_symlink';" | awk 'NR>1 {print $2}')
 
 if [[ $have_symlink == "DISABLED" ]]; then
   log_message "PASS: Symbolic links are disabled." "success"
@@ -853,7 +853,7 @@ fi
 
 log_message  "4.7 Ensure the 'secure_file_priv' is Configured Correctly (Automated)"
 # Execute the SQL statement to check the value of 'secure_file_priv'
-secure_file_priv=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW GLOBAL VARIABLES WHERE Variable_name = 'secure_file_priv';" | awk 'NR>1 {print $2}')
+secure_file_priv=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW GLOBAL VARIABLES WHERE Variable_name = 'secure_file_priv';" | awk 'NR>1 {print $2}')
 
 if [[ -z "$secure_file_priv" ]]; then
   log_message "FAIL: 'secure_file_priv' is set to an empty string. If you are not going to use this feature, remove secure_file_priv from the [mariadbd]" "error"
@@ -865,7 +865,7 @@ fi
 
 log_message "4.8 Ensure 'sql_mode' Contains 'STRICT_ALL_TABLES' (Automated)"
 # Execute the SQL statement to check the value of 'sql_mode'
-sql_mode=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE 'sql_mode';" | awk 'NR>1 {print $2}')
+sql_mode=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE 'sql_mode';" | awk 'NR>1 {print $2}')
 
 if [[ "$sql_mode" == *"STRICT_ALL_TABLES"* ]]; then
   log_message "PASS: 'sql_mode' contains 'STRICT_ALL_TABLES'." "success"
@@ -875,7 +875,7 @@ fi
 
 log_message  "4.9 Enable data-at-rest encryption in MariaDB (Automated)"
 # Check if data-at-rest encryption is enabled
-encryption_enabled=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT VARIABLE_VALUE FROM information_schema.global_variables WHERE variable_name LIKE '%ENCRYPT%';" | awk 'NR>1 {print $1}')
+encryption_enabled=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT VARIABLE_VALUE FROM information_schema.global_variables WHERE variable_name LIKE '%ENCRYPT%';" | awk 'NR>1 {print $1}')
 
 if [[ "$encryption_enabled" == "OFF" ]]; then
   log_message "FAIL: Data-at-rest encryption is not enabled." "error"
@@ -883,7 +883,7 @@ else
   log_message "PASS: Data-at-rest encryption is enabled." "success"
   
   # List encrypted tablespaces
-  encrypted_tablespaces=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT SPACE, NAME FROM INFORMATION_SCHEMA.INNODB_TABLESPACES_ENCRYPTION;" | awk 'NR>1 {print $1,$2}')
+  encrypted_tablespaces=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT SPACE, NAME FROM INFORMATION_SCHEMA.INNODB_TABLESPACES_ENCRYPTION;" | awk 'NR>1 {print $1,$2}')
 
   if [[ -z "$encrypted_tablespaces" ]]; then
     log_message "FAIL: No encrypted tablespaces found." "error"
@@ -895,7 +895,7 @@ fi
 
 log_message  "5.1 Ensure Only Administrative Users Have Full Database Access (Manual)"
 # Execute the SQL statement to check user privileges
-query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT * FROM information_schema.user_privileges WHERE grantee NOT LIKE \"\'mysql.%localhost'\'\";")
+query_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT * FROM information_schema.user_privileges WHERE grantee NOT LIKE \"\'mysql.%localhost'\'\";")
 
 # Check if any non-administrative users are returned
 if [[ -z "$query_result" ]]; then
@@ -908,7 +908,7 @@ fi
 
 log_message  "5.2 Ensure 'FILE' is Not Granted to Non-Administrative Users (Manual)"
 # Execute the SQL statement to check FILE privileges
-query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'FILE';")
+query_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'FILE';")
 
 # Check if any non-administrative users are returned
 if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
@@ -921,7 +921,7 @@ fi
 
 log_message  "5.3 Ensure 'PROCESS' is Not Granted to Non-Administrative Users (Manual)"
 # Execute the SQL statement to check PROCESS privileges
-query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'PROCESS';")
+query_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'PROCESS';")
 
 # Check if any non-administrative users are returned
 if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
@@ -934,7 +934,7 @@ fi
 
 log_message  "5.4 Ensure 'SUPER' is Not Granted to Non-Administrative Users (Manual)"
 # Execute the SQL statement to check SUPER privileges
-query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'SUPER';")
+query_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'SUPER';")
 
 # Check if any non-administrative users are returned
 if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
@@ -947,7 +947,7 @@ fi
 
 log_message  "5.5 Ensure 'SHUTDOWN' is Not Granted to Non-Administrative Users (Manual)"
 # Execute the SQL statement to check SHUTDOWN privileges
-query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'SHUTDOWN';")
+query_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'SHUTDOWN';")
 
 # Check if any non-administrative users are returned
 if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
@@ -960,7 +960,7 @@ fi
 
 log_message  "5.6 Ensure 'CREATE USER' is Not Granted to Non-Administrative Users (Manual)"
 # Execute the SQL statement to check CREATE USER privileges
-query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'CREATE USER';")
+query_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'CREATE USER';")
 
 # Check if any non-administrative users are returned
 if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
@@ -973,7 +973,7 @@ fi
 
 log_message  "5.7 Ensure 'GRANT OPTION' is Not Granted to Non-Administrative Users (Manual)"
 # Execute the SQL statement to check GRANT OPTION
-query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT DISTINCT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE IS_GRANTABLE = 'YES';")
+query_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT DISTINCT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE IS_GRANTABLE = 'YES';")
 
 # Check if any non-administrative users are returned
 if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
@@ -986,7 +986,7 @@ fi
 
 log_message  "5.8 Ensure 'REPLICATION SLAVE' is Not Granted to Non-Administrative Users (Manual)"
 # Execute the SQL statement to check REPLICATION SLAVE privilege
-query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'REPLICATION SLAVE';")
+query_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'REPLICATION SLAVE';")
 
 # Check if any non-administrative users are returned
 if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
@@ -999,7 +999,7 @@ fi
 
 log_message  "5.9 Ensure DML/DDL Grants are Limited to Specific Databases and Users (Manual)"
 # Execute the SQL statement to check DML/DDL grants
-query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT User, Host, Db FROM mysql.db WHERE Select_priv='Y' OR Insert_priv='Y' OR Update_priv='Y' OR Delete_priv='Y' OR Create_priv='Y' OR Drop_priv='Y' OR Alter_priv='Y';")
+query_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT User, Host, Db FROM mysql.db WHERE Select_priv='Y' OR Insert_priv='Y' OR Update_priv='Y' OR Delete_priv='Y' OR Create_priv='Y' OR Drop_priv='Y' OR Alter_priv='Y';")
 
 # Check if any users have unrestricted DML/DDL privileges
 if [[ -z "$query_result" ]] || [[ "$query_result" =~ "root" ]]; then
@@ -1015,7 +1015,7 @@ log_message  "5.10 Escaped and should be performed manually." "warning"
 
 log_message  "6.1 Ensure 'log_error' is configured correctly (Automated)"
 # Execute the SQL statement to get the value of 'log_error'
-log_error=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW variables LIKE 'log_error';" | awk '{print $2}')
+log_error=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW variables LIKE 'log_error';" | awk '{print $2}')
 
 # Check if 'log_error' is configured correctly
 if [[ "$log_error" != "./stderr.err" && "$log_error" != "" ]]; then
@@ -1027,7 +1027,7 @@ fi
 
 log_message  "6.2 Ensure Log Files are Stored on a Non-System Partition (Automated)"
 # Execute the SQL statement to get the value of 'log_bin_basename'
-log_bin_basename=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT @@global.log_bin_basename;" | awk '{print $2}')
+log_bin_basename=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT @@global.log_bin_basename;" | awk '{print $2}')
 
 # Check if log files are stored on a non-system partition
 if [[ "$log_bin_basename" != *"/var/"* && "$log_bin_basename" != *"/usr/"* && "$log_bin_basename" != "/"* ]]; then
@@ -1039,7 +1039,7 @@ fi
 
 log_message  "6.3 Ensure 'log_warnings' is Set to '2' (Automated)"
 # Execute the SQL statement to get the value of 'log_warnings'
-log_warnings=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW GLOBAL VARIABLES LIKE 'log_warnings';" | awk 'NR> 1 {print $2}')
+log_warnings=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW GLOBAL VARIABLES LIKE 'log_warnings';" | awk 'NR> 1 {print $2}')
 
 # Check if 'log_warnings' is set to '2'
 if [[ "$log_warnings" == "2" ]]; then
@@ -1051,7 +1051,7 @@ fi
 
 log_message  "6.4 Ensure Audit Logging Is Enabled (Automated)"
 # Execute the SQL statement to check audit-related variables
-audit_logging=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE '%audit%';")
+audit_logging=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE '%audit%';")
 
 # Check if the audit logging variables are configured properly
 if [[ $audit_logging =~ "audit_log_format" && $audit_logging =~ "audit_log_policy" && $audit_logging =~ "audit_log_rotate_on_size" ]]; then
@@ -1064,7 +1064,7 @@ fi
 
 log_message  "6.5 Ensure the Audit Plugin Can't be Unloaded (Automated)"
 # Execute the SQL statement to check the audit plugin load option
-load_option=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT LOAD_OPTION FROM information_schema.plugins WHERE PLUGIN_NAME='SERVER_AUDIT';")
+load_option=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT LOAD_OPTION FROM information_schema.plugins WHERE PLUGIN_NAME='SERVER_AUDIT';")
 
 # Check if the load option is set to FORCE_PLUS_PERMANENT
 if [[ $load_option == "FORCE_PLUS_PERMANENT" ]]; then
@@ -1076,7 +1076,7 @@ fi
 
 log_message  "6.6 Ensure Binary and Relay Logs are Encrypted (Automated)"
 # Execute the SQL statement to check the encryption settings for binary and relay logs
-encryption_settings=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT VARIABLE_NAME, VARIABLE_VALUE, 'BINLOG - At Rest Encryption' as Note FROM information_schema.global_variables WHERE variable_name LIKE '%ENCRYPT_LOG%';")
+encryption_settings=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT VARIABLE_NAME, VARIABLE_VALUE, 'BINLOG - At Rest Encryption' as Note FROM information_schema.global_variables WHERE variable_name LIKE '%ENCRYPT_LOG%';")
 
 # Check if the encryption setting is ON
 if [[ $encryption_settings == *"ON"* ]]; then
@@ -1089,7 +1089,7 @@ fi
 
 log_message  "7.1 Disable use of the mysql_old_password plugin (Automated)"
 # Check if the mysql_old_password plugin is disabled for new passwords
-password_setting=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES WHERE Variable_name = 'old_passwords';")
+password_setting=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES WHERE Variable_name = 'old_passwords';")
 
 # Extract the value from the result
 password_value=$(echo "$password_setting" | awk 'NR==2 {print $2}')
@@ -1104,7 +1104,7 @@ else
 fi
 
 # Check if connections using mysql_old_password plugin are blocked
-plugin_setting=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE 'secure_auth';")
+plugin_setting=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE 'secure_auth';")
 
 # Extract the value from the result
 plugin_value=$(echo "$plugin_setting" | awk 'NR==2 {print $2}')
@@ -1126,7 +1126,7 @@ log_message "NOTICE: To assess this recommendation, perform the following steps:
 
 log_message  "7.3 Ensure strong authentication is utilized for all accounts (Automated)"
 # Execute the SQL query to find users utilizing specific plugins
-query_result=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT User, host FROM mysql.user WHERE (plugin IN ('mysql_native_password', 'mysql_old_password', '') AND NOT authentication_string = 'invalid');")
+query_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT User, host FROM mysql.user WHERE (plugin IN ('mysql_native_password', 'mysql_old_password', '') AND NOT authentication_string = 'invalid');")
 
 # Check if any rows are returned
 if [[ -z "$query_result" ]]; then
@@ -1146,7 +1146,7 @@ else
 fi
 
 # Check if simple_password_check and cracklib_password_check plugins are active
-plugin_status=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW PLUGINS;")
+plugin_status=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW PLUGINS;")
 
 if [[ $plugin_status == *"simple_password_check"*"ACTIVE"* ]] && [[ $plugin_status == *"cracklib_password_check"*"ACTIVE"* ]]; then
   log_message "PASS: Password complexity plugins (simple_password_check and cracklib_password_check) are active." "success"
@@ -1155,7 +1155,7 @@ else
 fi
 
 # Check password policy settings
-password_settings=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE '%pass%';")
+password_settings=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SHOW VARIABLES LIKE '%pass%';")
 
 # Check if simple_password_check_minimal_length is greater than or equal to 14
 if [[ $password_settings == *"simple_password_check_minimal_length "* ]]; then
@@ -1190,7 +1190,7 @@ fi
 
 log_message  "7.5 Ensure No Users Have Wildcard Hostnames (Automated)"
 # Execute SQL statement to check for wildcard hostnames
-wildcard_users=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT user, host FROM mysql.user WHERE host = '%';" | tail -n +2)
+wildcard_users=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT user, host FROM mysql.user WHERE host = '%';" | tail -n +2)
 
 # Check if any rows are returned
 if [ -z "$wildcard_users" ]; then
@@ -1202,7 +1202,7 @@ fi
 
 log_message  "7.6 Ensure No Anonymous Accounts Exist (Automated)"
 # Execute SQL query to check for anonymous accounts
-anonymous_accounts=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT user, host FROM mysql.user WHERE user = '';" | tail -n +2)
+anonymous_accounts=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT user, host FROM mysql.user WHERE user = '';" | tail -n +2)
 
 # Check if any rows are returned
 if [ -z "$anonymous_accounts" ]; then
@@ -1214,7 +1214,7 @@ fi
 
 log_message  "8.1 Ensure 'require_secure_transport' is Set to 'ON' and 'have_ssl' is Set to 'YES' (Automated)"
 # Execute SQL query to check for anonymous accounts
-anonymous_accounts=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT user, host FROM mysql.user WHERE user = '';" | tail -n +2)
+anonymous_accounts=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SELECT user, host FROM mysql.user WHERE user = '';" | tail -n +2)
 
 # Check if any rows are returned
 if [ -z "$anonymous_accounts" ]; then
@@ -1226,7 +1226,7 @@ fi
 
 log_message  "8.2 Ensure 'ssl_type' is Set to 'ANY', 'X509', or 'SPECIFIED' for All Remote Users (Automated)"
 # Get remote users and their ssl_type
-users=$(mysql -u"$username" -p"$password" -h"$host" -P"$port"  -Bse "SELECT user, host, ssl_type FROM mysql.user WHERE NOT HOST IN ('::1', '127.0.0.1', 'localhost');")
+users=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port"  -Bse "SELECT user, host, ssl_type FROM mysql.user WHERE NOT HOST IN ('::1', '127.0.0.1', 'localhost');")
 
 # Iterate over the result set
 while read -r user host_feild ssl_type; do
@@ -1239,7 +1239,7 @@ done <<< "$users"
 
 log_message  "8.3 Set Maximum Connection Limits for Server and per User (Manual)"
 # Check global maximum connection limits
-global_limits=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SELECT VARIABLE_NAME, VARIABLE_VALUE FROM information_schema.global_variables WHERE VARIABLE_NAME LIKE 'max_%connections';")
+global_limits=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SELECT VARIABLE_NAME, VARIABLE_VALUE FROM information_schema.global_variables WHERE VARIABLE_NAME LIKE 'max_%connections';")
 max_connections=$(echo "$global_limits" | grep "max_connections" | awk '{print $2}')
 max_user_connections=$(echo "$global_limits" | grep "max_user_connections" | awk '{print $2}')
 
@@ -1256,7 +1256,7 @@ else
 fi
 
 # Check user-specific maximum connection limits
-user_limits=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SELECT user, host, max_connections, max_user_connections FROM mysql.user WHERE user NOT LIKE 'mysql.%' AND user NOT LIKE 'root';")
+user_limits=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SELECT user, host, max_connections, max_user_connections FROM mysql.user WHERE user NOT LIKE 'mysql.%' AND user NOT LIKE 'root';")
 
 # Iterate over the result set
 while read -r user host_feild max_conn max_user_conn; do
@@ -1275,7 +1275,7 @@ done <<< "$user_limits"
 
 log_message  "9.1 Ensure Replication Traffic is Secured (Manual)"
 # Check if replication is using SSL/TLS
-ssl_allowed=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Allowed" | awk '{print $2}')
+ssl_allowed=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Allowed" | awk '{print $2}')
 
 if [[ "$ssl_allowed" == "Yes" ]]; then
   log_message "PASS: Replication traffic is using SSL/TLS." "success"
@@ -1287,11 +1287,11 @@ fi
 
 log_message  "9.2 Ensure 'MASTER_SSL_VERIFY_SERVER_CERT' is enabled (Automated)"
 # Check if replication is using SSL/TLS
-ssl_allowed=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Allowed" | awk '{print $2}')
+ssl_allowed=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Allowed" | awk '{print $2}')
 
 if [[ "$ssl_allowed" == "Yes" ]]; then
   # SSL/TLS is enabled, check if MASTER_SSL_VERIFY_SERVER_CERT is enabled
-  verify_server_cert=$(mysql -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Verify_Server_Cert" | awk '{print $2}')
+  verify_server_cert=$(mariadb -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Verify_Server_Cert" | awk '{print $2}')
 
   if [[ "$verify_server_cert" == "Yes" ]]; then
     log_message "PASS: MASTER_SSL_VERIFY_SERVER_CERT is enabled for replication traffic." "success"
@@ -1304,14 +1304,14 @@ fi
 
 log_message  "9.3 Ensure 'super_priv' is Not Set to 'Y' for Replication Users (Automated)"
 # Check if replication is using SSL/TLS
-ssl_allowed=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Allowed" | awk '{print $2}')
+ssl_allowed=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Allowed" | awk '{print $2}')
 
 if [[ "$ssl_allowed" == "Yes" ]]; then
   # SSL/TLS is enabled, check super_priv for replication users
-  replication_users=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SELECT user FROM mysql.user WHERE Repl_slave_priv = 'Y';")
+  replication_users=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SELECT user FROM mysql.user WHERE Repl_slave_priv = 'Y';")
 
   while IFS= read -r user; do
-    super_priv=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SELECT super_priv FROM mysql.user WHERE user = '$user';")
+    super_priv=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SELECT super_priv FROM mysql.user WHERE user = '$user';")
 
     if [[ "$super_priv" == "Y" ]]; then
       log_message "FAIL: Replication user '$user' has super_priv set to 'Y'." "error"
@@ -1321,7 +1321,7 @@ if [[ "$ssl_allowed" == "Yes" ]]; then
   done <<< "$replication_users"
 
   # Check Master_SSL_Cipher setting
-  master_ssl_cipher=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -e -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Cipher" | awk '{print $2}')
+  master_ssl_cipher=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Cipher" | awk '{print $2}')
 
   if [[ -n "$master_ssl_cipher" ]]; then
     log_message "PASS: Master_SSL_Cipher is set to '$master_ssl_cipher' for replication traffic." "success"
@@ -1334,12 +1334,12 @@ fi
 
 log_message  "9.4 Ensure only approved ciphers are used for Replication (Manual)"
 # Check if replication is using SSL/TLS
-ssl_allowed=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Allowed" | awk '{print $2}')
+ssl_allowed=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Allowed" | awk '{print $2}')
 
 if [[ "$ssl_allowed" == "Yes" ]]; then
   # SSL/TLS is enabled, check SSL cipher configuration
 
-  master_cipher=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Cipher" | awk '{print $2}')
+  master_cipher=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Cipher" | awk '{print $2}')
 
   if [[ -n "$master_cipher" ]]; then
     echo "Master_SSL_Cipher: $master_cipher"
@@ -1367,14 +1367,14 @@ fi
 
 log_message  "9.5 Ensure mutual TLS is enabled (Manual)"
 # Check if replication is using SSL/TLS
-ssl_allowed=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Allowed" | awk '{print $2}')
+ssl_allowed=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Allowed" | awk '{print $2}')
 
 if [[ "$ssl_allowed" == "Yes" ]]; then
   # SSL/TLS is enabled, check mutual TLS configuration
 
   # Check REPLICA configuration
-  replica_cert=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Cert" | awk '{print $2}')
-  replica_key=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Key" | awk '{print $2}')
+  replica_cert=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Cert" | awk '{print $2}')
+  replica_key=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SHOW REPLICA STATUS\G;" | grep -i "Master_SSL_Key" | awk '{print $2}')
 
   if [[ -n "$replica_cert" && -n "$replica_key" ]]; then
     log_message "PASS: REPLICA is configured with mutual TLS. Certificate: $replica_cert, Key: $replica_key" "success"
@@ -1383,10 +1383,10 @@ if [[ "$ssl_allowed" == "Yes" ]]; then
   fi
 
   # Check PRIMARY for replication users' ssl_type
-  replication_users=$(mysql -Bse "SELECT user FROM mysql.user WHERE Repl_slave_priv = 'Y';")
+  replication_users=$(mariadb -Bse "SELECT user FROM mysql.user WHERE Repl_slave_priv = 'Y';")
 
   while IFS= read -r user; do
-    ssl_type=$(mysql -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SELECT ssl_type FROM mysql.user WHERE user = '$user';")
+    ssl_type=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -Bse "SELECT ssl_type FROM mysql.user WHERE user = '$user';")
 
     if [[ "$ssl_type" == "X509" ]]; then
       log_message "PASS: Replication user '$user' has ssl_type set to 'X509'."
