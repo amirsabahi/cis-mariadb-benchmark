@@ -2,7 +2,7 @@
 
 # NOTE: Not a complete list of remediation.
 
-read -p "Enter MariaDB Username: " usernamef
+read -p "Enter MariaDB Username: " username
 read -s -p "Enter MariaDB Password: " password
 echo
 read -p "Enter MariaDB Host (default: 127.0.0.1): " host
