@@ -2,7 +2,7 @@
 
 # NOTE: Not a complete list of remediation.
 
-read -p "Enter MariaDB Username: " username
+read -p "Enter MariaDB Username: " usernamef
 read -s -p "Enter MariaDB Password: " password
 echo
 read -p "Enter MariaDB Host (default: 127.0.0.1): " host
@@ -51,14 +51,14 @@ apt-get --assume-yes install mariadb-plugin-cracklib-password-check
 
 # MariaDB Commands
 # Run the SQL commands
-mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SET GLOBAL slow_query_log = 'OFF';"
-mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SET GLOBAL general_log = 'OFF';"
-mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "SET GLOBAL sql_mode = 'STRICT_ALL_TABLES,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';"
-mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "INSTALL SONAME 'simple_password_check';"
-mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "INSTALL SONAME 'cracklib_password_check';"
-mysql -u"$username" -p"$password" -h"$host" -P"$port"-e "INSTALL SONAME 'server_audit';"
-mysql -u"$username" -p"$password" -h"$host" -P"$port"-e "SET GLOBAL sql_mode ='STRICT_ALL_TABLES,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';"
-mysql -u"$username" -p"$password" -h"$host" -P"$port" -e "alter user 'root'@'localhost' identified via 'unix_socket'; set password for 'mysql'@'localhost' = 'invalid'; set password for 'mariadb.sys'@'localhost' = 'invalid';"
+mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SET GLOBAL slow_query_log = 'OFF';"
+mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SET GLOBAL general_log = 'OFF';"
+mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "SET GLOBAL sql_mode = 'STRICT_ALL_TABLES,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';"
+mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "INSTALL SONAME 'simple_password_check';"
+mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "INSTALL SONAME 'cracklib_password_check';"
+mariadb -u"$username" -p"$password" -h"$host" -P"$port"-e "INSTALL SONAME 'server_audit';"
+mariadb -u"$username" -p"$password" -h"$host" -P"$port"-e "SET GLOBAL sql_mode ='STRICT_ALL_TABLES,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';"
+mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "alter user 'root'@'localhost' identified via 'unix_socket'; set password for 'mysql'@'localhost' = 'invalid'; set password for 'mariadb.sys'@'localhost' = 'invalid';"
 echo -e "\033[0;33m Run the following for each user manually: ALTER USER 'laravel'@'localhost' identified via 'unix_socket'; \033[0m"
 echo -e "\033[0;33m Run the following for each user manually: ALTER USER 'user_name'@'localhost' REQUIRE SSL; \033[0m"
 
