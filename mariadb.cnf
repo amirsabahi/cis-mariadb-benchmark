@@ -54,7 +54,7 @@ innodb_encrypt_tables = ON
 # file_key_management_encryption_algorithm = AES_CTR
 
 skip-grant-tables = FALSE
-Skip-symbolic-links = YES
+skip-symbolic-links = YES
 
 #MariaDB plugin
 plugin_load_add = server_audit
@@ -75,6 +75,6 @@ plugin_load_add = cracklib_password_check
 cracklib_password_check = FORCE_PLUS_PERMANENT
 
 max_connections = 2000
-Max_user_connections = 2000
+max_user_connections = 2000
 
 
