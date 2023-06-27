@@ -48,7 +48,7 @@ innodb_encrypt_log = ON
 # Encrypting Temporary Files
 encrypt_tmp_files = ON
 # You can configure InnoDB encryption to automatically have all new InnoDB
-tables automatically encrypted, or specify encrypt per table.
+# tables automatically encrypted, or specify encrypt per table.
 innodb_encrypt_tables = ON
 # Uncomment the line below if utilizing MariaDB built with OpenSSL
 # file_key_management_encryption_algorithm = AES_CTR
