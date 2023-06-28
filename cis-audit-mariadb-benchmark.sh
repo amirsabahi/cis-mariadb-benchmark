@@ -434,7 +434,7 @@ log_message  "2.12 Ensure Only Approved Ciphers are Used (Automated)"
 # Run the SQL statement to check SSL ciphers
 ssl_ciphers_query="SELECT VARIABLE_NAME, VARIABLE_VALUE FROM information_schema.global_variables WHERE VARIABLE_NAME = 'ssl_cipher';"
 
-ssl_ciphers_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$ssl_ciphers_query" | awk '{print $2}')
+ssl_ciphers_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -B -N -e "$ssl_ciphers_query" | awk '{NR>1 print $2}')
 
 # Write results to the file
 log_message "SSL Ciphers Audit:"
