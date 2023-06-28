@@ -32,19 +32,6 @@ ln -s /dev/null $HOME/.mysql_history
 # Harden Usage for 'local_infile' on MariaDB Clients
 mariadb --local-infile=0 --load-data-local-dir=/my/local/data
 
-# Apply data-at-rest
-mkdir -p /etc/mysql/encryption 
-echo -n "1;" ; openssl rand -hex 32 | tee -a /etc/mysql/encryption/keyfile
-openssl rand -hex 128 | tee -a /etc/mysql/encryption/keyfile.key
-openssl enc -aes-256-cbc -md sha1 \
--pass file:/etc/mysql/encryption/keyfile.key \
--in /etc/mysql/encryption/keyfile \
--out /etc/mysql/encryption/keyfile.enc
-rm /etc/mysql/encryption/keyfile
-chown mysql:mysql -R /etc/mysql/encryption
-chmod 640 /etc/mysql/encryption/keyfile*
-echo -e "\033[0;33m Set ssl_cert ssl_key and ssl_ca for client and server. \033[0m"
-
 # Install mariadb-plugin-cracklib-password-check
 apt update
 apt-get --assume-yes install mariadb-plugin-cracklib-password-check
