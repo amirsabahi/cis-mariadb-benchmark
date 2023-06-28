@@ -81,11 +81,11 @@ WHERE (VARIABLE_NAME LIKE '%dir' OR VARIABLE_NAME LIKE '%file') AND
 ORDER BY VARIABLE_NAME;"
 
 datadir_result=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "$sql_query" | grep 'DATADIR' | awk '{print $2}')
+echo "$datadir_result"
 
 # Check if datadir result is empty
 if [ -z "$datadir_result" ]; then
   log_message "Failed to obtain datadir location." "error"
-
 fi
 
 # Execute df command for datadir location
