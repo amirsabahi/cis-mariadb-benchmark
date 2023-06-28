@@ -732,7 +732,7 @@ if [[ -z "$server_audit_file_path" ]]; then
 fi
 
 # Check permissions and ownership of the server audit file path
-ls -l "$server_audit_file_path" | grep -E "^-([rw-]{2}-){2}---[ \t]*[0-9][ \t]*mysql[ \t]*mysql.*$"
+ls -l "/var/lib/mysql/$server_audit_file_path" | grep -E "^-([rw-]{2}-){2}---[ \t]*[0-9][ \t]*mysql[ \t]*mysql.*$"
 
 # Check if there was any output from the command
 if [ $? -eq 0 ]; then
