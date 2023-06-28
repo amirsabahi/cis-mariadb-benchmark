@@ -92,7 +92,7 @@ fi
 df_output=$(df -h "$datadir_result" | grep -vE "^Filesystem|/var|/usr|/$")
 
 # Display the df output
-if [ -nz "$df_output" ]; then
+if [ -z "$df_output" ]; then
 echo "$df_output"
   echo "Failed to obtain datadir location." "error"
   log_message "The output returned from the df command above should not include root (/), /var, or /usr."
@@ -451,9 +451,9 @@ approved_ciphers=("ECDHE","ECDSA", "AES128", "GCM", "SHA256")  # Add your approv
 IFS=$''
 for cipher in $ssl_ciphers_result; do
   cipher_name=$(echo "$cipher" | awk '{print $2}')
-  if [ -z "$cipher_name" ]]; then
+  if [[ -z "$cipher_name" ]]; then
     log_message "FAIL: SSL ciphers are empty." "error"
-  elif [ ! " ${approved_ciphers[@]} " =~ " $cipher_name " ]]; then
+  elif [[ ! " ${approved_ciphers[@]} " =~ " $cipher_name " ]]; then
     log_message "FAIL: Unapproved cipher found: $cipher_name" "error"
   else
     log_message "PASS: $cipher_name" "success"
