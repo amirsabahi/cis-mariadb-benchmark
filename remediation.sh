@@ -52,7 +52,10 @@ echo -e "\033[0;33m Run the following for each user manually: ALTER USER 'user_n
 chmod 660 /root/server_audit.log
 chown mysql:mysql /root/server_audit.log
 
-usermod -s /bin/false mysql
+usermod -s /bin/false MySQL
+
+chown -R mysql:mysql /etc/mysql/encryption
+chmod 640 /etc/mysql/encryption/keyfile*
 
 echo -e "\033[0;33m Ensure No Users Have Wildcard Hostnames. Use ALTER USER \033[0m"
 echo -e "\033[0;33m Now you can enable encyption for any table in the desired database. Run this for each table : ALTER TABLE table_name ENCRYPTED=YES ENCRYPTION_KEY_ID=1; \033[0m"
