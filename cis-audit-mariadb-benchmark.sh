@@ -146,7 +146,7 @@ for file in $all_files; do
   else
     log_message "FAIL: File: $file is not symbolically linked to /dev/null" "error"
   fi
-
+done
 
 log_message "1.4 Verify That the MYSQL_PWD Environment Variable is Not in Use (Automated)"
 # Verify That the MYSQL_PWD Environment Variable is Not in Use
