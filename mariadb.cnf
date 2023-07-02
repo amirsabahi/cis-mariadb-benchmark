@@ -33,8 +33,12 @@ tls_version=TLSv1.2,TLSv1.3
 ssl_cipher='ECDHE-ECDSA-AES128-GCM-SHA256'
 
 [mysqld]
-bind_address = 127.0.0.1
+bind_address = 0.0.0.0
 local-infile=0
+ssl_ca = /etc/mysql/conf.d/certificates/ca-cert.pem
+ssl_cert = /etc/mysql/conf.d/certificates/server-cert.pem
+ssl_key = /etc/mysql/conf.d/certificates/server-key.pem
+
 
 
 [mariadb]
@@ -48,7 +52,7 @@ innodb_encrypt_log = ON
 # Encrypting Temporary Files
 encrypt_tmp_files = ON
 # You can configure InnoDB encryption to automatically have all new InnoDB
-# tables automatically encrypted, or specify encrypt per table.
+#tables automatically encrypted, or specify encrypt per table.
 innodb_encrypt_tables = ON
 # Uncomment the line below if utilizing MariaDB built with OpenSSL
 # file_key_management_encryption_algorithm = AES_CTR
@@ -76,5 +80,3 @@ cracklib_password_check = FORCE_PLUS_PERMANENT
 
 max_connections = 2000
 max_user_connections = 2000
-
-
