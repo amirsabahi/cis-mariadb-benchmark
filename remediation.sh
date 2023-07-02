@@ -32,6 +32,16 @@ if [ -d /usr/lib/mysql/plugin/ ]; then
     chown mysql:mysql /usr/lib/mysql/plugin/
 fi
 
+if [ -f /etc/mysql/encryption/keyfile.enc ]; then
+    chmod 750 /etc/mysql/encryption/keyfile.enc
+    chown mysql:mysql /etc/mysql/encryption/keyfile.enc
+fi
+
+if [ -f /etc/mysql/encryption/keyfile.enc ]; then
+    chmod 750 /etc/mysql/encryption/keyfile.key
+    chown mysql:mysql /etc/mysql/encryption/keyfile.key
+fi
+
 # Disable MariaDB Command History
 ln -s /dev/null $HOME/.mysql_history
 
