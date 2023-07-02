@@ -65,8 +65,8 @@ mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "alter user 'root'@'l
 echo -e "\033[0;33m Run the following for each user manually: ALTER USER 'laravel'@'localhost' identified via 'unix_socket'; \033[0m"
 echo -e "\033[0;33m Run the following for each user manually: ALTER USER 'user_name'@'localhost' REQUIRE SSL; \033[0m"
 
-chmod 660 /root/server_audit.log
-chown mysql:mysql /root/server_audit.log
+chmod 660 /var/lib/mysql/server_audit.log
+chown mysql:mysql /var/lib/mysql/server_audit.log
 
 usermod -s /bin/false MySQL
 
