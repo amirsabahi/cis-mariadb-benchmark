@@ -9,7 +9,11 @@
 #ssl-key  = /etc/mysql/client-key.pem
 #
 # Allow only TLS encrypted connections
-ssl-verify-server-cert = on
+ssl-verify-server-cert = off
+ssl_cert = /etc/mysql/conf.d/certificates/client-cert.pem
+ssl_key = /etc/mysql/conf.d/certificates/client-key.pem
+ssl_ca = /etc/mysql/conf.d/certificates/ca-cert.pem
+
 
 # This group is *never* read by mysql client library, though this
 # /etc/mysql/mariadb.cnf.d/client.cnf file is not read by Oracle MySQL
@@ -19,4 +23,4 @@ ssl-verify-server-cert = on
 [client-mariadb]
 ssl_cert = /etc/mysql/conf.d/certificates/client-cert.pem
 ssl_key = /etc/mysql/conf.d/certificates/client-key.pem
-ssl_ca = /etc/mysql/conf.d/certificates/ca.pem
+ssl_ca = /etc/mysql/conf.d/certificates/ca-cert.pem
