@@ -20,6 +20,12 @@ if [ -f /var/log/mysql/mysql.log ]; then
     chown mysql:mysql /var/log/mysql/mysql.log
 fi
 
+# Check if /var/lib/mysql/server_audit.log exists and set permissions and ownership
+if [ -f /var/lib/mysql/server_audit.log ]; then
+    chmod 660 /var/lib/mysql/server_audit.log
+    chown mysql:mysql /var/lib/mysql/server_audit.log
+fi
+
 # Check if /usr/lib/mysql/plugin/ exists and set permissions and ownership
 if [ -d /usr/lib/mysql/plugin/ ]; then
     chmod 550 /usr/lib/mysql/plugin/
