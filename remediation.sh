@@ -46,7 +46,7 @@ fi
 ln -s /dev/null $HOME/.mysql_history
 
 # Harden Usage for 'local_infile' on MariaDB Clients
-mariadb --local-infile=0 --load-data-local-dir=/my/local/data
+mariadb --local-infile=0 --load-data-local-dir=/var/lib/mysql
 
 # Install mariadb-plugin-cracklib-password-check
 apt update
