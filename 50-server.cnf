@@ -106,12 +106,13 @@ collation-server      = utf8mb4_general_ci
 # This group is only read by MariaDB servers, not by MySQL.
 # If you use the same .cnf file for MySQL and MariaDB,
 # you can put MariaDB-only options here
-[mariadbd]
+[mariadb]
 plugin_load_add = server_audit
 local-infile=0
+ssl_ca = /etc/mysql/conf.d/certificates/ca-cert.pem
 ssl_cert = /etc/mysql/conf.d/certificates/server-cert.pem
 ssl_key = /etc/mysql/conf.d/certificates/server-key.pem
-ssl_ca = /etc/mysql/conf.d/certificates/ca.pem
+
 
 # This group is only read by MariaDB-11.0 servers.
 # If you use the same .cnf file for MariaDB of different versions,
