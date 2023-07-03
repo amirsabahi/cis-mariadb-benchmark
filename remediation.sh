@@ -68,7 +68,7 @@ echo -e "\033[0;33m Run the following for each user manually: ALTER USER 'user_n
 chmod 660 /var/lib/mysql/server_audit.log
 chown mysql:mysql /var/lib/mysql/server_audit.log
 
-usermod -s /bin/false MySQL
+usermod -s /bin/false mysql
 
 chown -R mysql:mysql /etc/mysql/encryption
 chmod 640 /etc/mysql/encryption/keyfile*
