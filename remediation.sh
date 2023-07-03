@@ -11,8 +11,8 @@ read -p "Enter MariaDB Port (default: 3306): " port
 port=${port:-3306}
 
 # Set permissions and ownership for /var/lib/mysql
-chmod 750 /var/lib/mysql/
-chown mysql:mysql /var/lib/mysql/
+chmod -R 750 /var/lib/mysql/
+chown -R mysql:mysql /var/lib/mysql/
 
 # Check if /var/log/mysql/mysql.log exists and set permissions and ownership
 if [ -f /var/log/mysql/mysql.log ]; then
@@ -28,8 +28,8 @@ fi
 
 # Check if /usr/lib/mysql/plugin/ exists and set permissions and ownership
 if [ -d /usr/lib/mysql/plugin/ ]; then
-    chmod 550 /usr/lib/mysql/plugin/
-    chown mysql:mysql /usr/lib/mysql/plugin/
+    chmod -R 550 /usr/lib/mysql/plugin/
+    chown -R mysql:mysql /usr/lib/mysql/plugin/
 fi
 
 if [ -f /etc/mysql/encryption/keyfile.enc ]; then
