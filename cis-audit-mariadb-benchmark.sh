@@ -5,6 +5,9 @@
 # Output file
 output_file="maridb_audit_results.txt"
 
+# Error Log file
+error_log = "error.log"
+
 # Function to write audit results to the output file
 write_to_file() {
     echo -e "$1" >> "$output_file"
@@ -45,7 +48,7 @@ function log_message() {
 
 # Check if the output file exists and delete it
 if [ -f "$output_file" ]; then
-    rm "$output_file"
+    rm "$output_file" 2>> "$error_log"
 fi
 
 # Audit MariaDB configuration
@@ -63,7 +66,7 @@ read -p "Enter the path to the mariadbd startup command: ( /usr/bin/mysql or pre
 mariadb_startup_command=${mariadb_startup_command:-/etc/bin/mysql}
 # Prompt the user for MariaDB credentials
 
-read -p "Enter MariaDB Username: " username
+read -p "Enter MariaDB Username: " username 
 read -s -p "Enter MariaDB Password: " password
 echo
 read -p "Enter MariaDB Host (default: 127.0.0.1): " host
@@ -103,7 +106,7 @@ fi
 
 log_message  "1.2 Use Dedicated Least Privileged Account for MariaDB Daemon/Service (Automated)"
 # Execute the command to assess the recommendation
-output=$(ps -ef | egrep "^mysql.*$")
+output=$(ps -ef | egrep "^mysql.*$") 2>> "$error_log"
 
 # Check if any lines are returned
 if [ -z "$output" ]; then
@@ -461,7 +464,7 @@ for cipher in $ssl_ciphers_result; do
 done
 
 # Reset IFS
-unset IFS
+unset IFS 2>> "$error_log"
 
 log_message  "3.1 Ensure 'datadir' Has Appropriate Permissions (Automated)"
 
@@ -712,7 +715,7 @@ log_message  "3.8 Ensure Plugin Directory Has Appropriate Permissions (Automated
 plugin_dir=$(mariadb -u"$username" -p"$password" -h"$host" -P"$port" -e "show variables where variable_name = 'plugin_dir'" | awk '/plugin_dir/ {print $2}')
 
 # Check permissions and ownership of the plugin directory
-ls -ld "$plugin_dir" | grep -E "dr-xr-x---|dr-xr-xr--" | grep "plugin"
+ls -ld "$plugin_dir" | grep -E "dr-xr-x---|dr-xr-xr--" | grep "plugin" 2>> "$error_log"
 
 # Check if there was any output from the command
 if [ $? -eq 0 ]; then
@@ -732,7 +735,7 @@ if [[ -z "$server_audit_file_path" ]]; then
 fi
 
 # Check permissions and ownership of the server audit file path
-ls -l "/var/lib/mysql/$server_audit_file_path" | grep -E "^-([rw-]{2}-){2}---[ \t]*[0-9][ \t]*mysql[ \t]*mysql.*$"
+ls -l "/var/lib/mysql/$server_audit_file_path" | grep -E "^-([rw-]{2}-){2}---[ \t]*[0-9][ \t]*mysql[ \t]*mysql.*$" 2>> "$error_log"
 
 # Check if there was any output from the command
 if [ $? -eq 0 ]; then
@@ -1011,7 +1014,6 @@ else
 fi
 
 log_message  "5.10 Escaped and should be performed manually." "warning"
-
 
 log_message  "6.1 Ensure 'log_error' is configured correctly (Automated)"
 # Execute the SQL statement to get the value of 'log_error'
