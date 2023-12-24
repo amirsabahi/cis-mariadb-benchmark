@@ -6,14 +6,14 @@
 output_file="maridb_audit_results.txt"
 
 # Error Log file
-error_log = "error.log"
+error_log="error.log"
 
 # Function to write audit results to the output file
 write_to_file() {
     echo -e "$1" >> "$output_file"
 }
 
-function log_message() {
+log_message() {
   message=$1
   type=${2:-message}  # Default type is "message"
   log_file="log.txt"
@@ -1405,4 +1405,3 @@ fi
 log_message "Audit completed."
 
 echo "Audit completed. Results are stored in $output_file."
-done
