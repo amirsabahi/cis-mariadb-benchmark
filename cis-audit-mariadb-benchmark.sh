@@ -74,6 +74,22 @@ host=${host:-127.0.0.1}
 read -p "Enter MariaDB Port (default: 3306): " port
 port=${port:-3306}
 
+# General 
+chmod -R 750 /var/lib/mysql/ 2>> "$error_log"
+chown -R mysql:mysql /var/lib/mysql/ 2>> "$error_log"
+chmod 660 /var/log/mysql/mysql.log 2>> "$error_log"
+chown mysql:mysql /var/log/mysql/mysql.log 2>> "$error_log"
+chmod 660 /var/lib/mysql/server_audit.log 2>> "$error_log"
+chown mysql:mysql /var/lib/mysql/server_audit.log 2>> "$error_log"
+chmod -R 550 /usr/lib/mysql/plugin/ 2>> "$error_log"
+chown -R mysql:mysql /usr/lib/mysql/plugin/ 2>> "$error_log"
+chmod 660 /var/lib/mysql/server_audit.log 2>> "$error_log"
+chown mysql:mysql /var/lib/mysql/server_audit.log 2>> "$error_log"
+chown -R mysql:mysql /etc/mysql/encryption 2>> "$error_log"
+chmod 750 /etc/mysql/encryption/keyfile* 2>> "$error_log"
+chmod 600  /var/log/mysql/mariadb.err 2>> "$error_log"
+chown mysql:mysql  /var/log/mysql/mariadb.err 2>> "$error_log"
+
 log_message "1.1 Operating System Level Configuration"
 
 # Obtain the location of MariaDB database files
@@ -139,8 +155,11 @@ all_files="$home_files"$'\n'"$root_files"
 # Check if any .mysql_history files are found
 if [ -z "$all_files" ]; then
   log_message "NOTICE: No .mysql_history files found." "info"
-
 fi
+
+rm /home/.mysql_history 2>> "$error_log"
+rm /root/.mysql_history 2>> "$error_log"
+ln -s /dev/null $HOME/.mysql_history 2>> "$error_log"
 
 # Iterate over each file and check if it is symbolically linked to /dev/null
 for file in $all_files; do
@@ -172,6 +191,9 @@ if [ -z "$output" ]; then
 else
   log_message "PASS: Interactive login is disabled for the mysql user." "success"
 fi
+
+usermod -s /bin/false mysql 2>> "$error_log"
+usermod -s /sbin/nologin mysql 2>> "$error_log"
 
 log_message  "1.6 Verify That 'MYSQL_PWD' is Not Set in Users' Profiles(Automated)"
 # Execute the command to verify MYSQL_PWD in users' profiles
@@ -1399,9 +1421,7 @@ if [[ "$ssl_allowed" == "Yes" ]]; then
 else
   log_message "NOTICE: Replication traffic is not secured with SSL/TLS. Skipping the check for mutual TLS configuration." "info"
 fi
-
-
 # End of script
-log_message "Audit completed."
 
+log_message "Audit completed."
 echo "Audit completed. Results are stored in $output_file."
